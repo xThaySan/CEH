@@ -10,7 +10,9 @@ RUN apt-get update -qq && \
     apt-get install -qy \
     nano \
     cron \
-    nc \
+    netcat \
+    python3 \
+    ftp \
     git \
     gnupg \
     unzip \
@@ -27,6 +29,18 @@ COPY errors /errors
 COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY conf/apache.conf /etc/apache2/conf-available/z-app.conf
 COPY app /app
-
 RUN a2enmod rewrite remoteip && \
     a2enconf z-app
+
+# Crontab
+COPY scripts/cronjob.sh /etc/cron.d/clear-tmp.sh
+RUN chmod 777 /etc/cron.d/clear-tmp.sh
+RUN crontab -l | { cat; echo "* * * * * bash /etc/cron.d/clear-tmp.sh"; } | crontab -
+
+# FTP Creds
+RUN echo "[172.18.0.3:21]\nadmin:Sup3Rs3CuReP4sS" > /root/ftp-database.txt
+
+# Entrypoint
+COPY scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
