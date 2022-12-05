@@ -37,10 +37,8 @@ COPY scripts/cronjob.sh /etc/cron.d/clear-tmp.sh
 RUN chmod 777 /etc/cron.d/clear-tmp.sh
 RUN crontab -l | { cat; echo "* * * * * bash /etc/cron.d/clear-tmp.sh"; } | crontab -
 
-# FTP Creds
-RUN echo "[172.18.0.3:21]\nadmin:Sup3Rs3CuReP4sS" > /root/ftp-database.txt
+# FTP Creds if no anonymous
+# RUN echo "[172.18.0.3:21]\nadmin:Sup3Rs3CuReP4sS" > /root/ftp-database.txt
 
 # Entrypoint
-COPY scripts/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/bin/sh", "-c", "cron && docker-php-entrypoint apache2-foreground"]
